@@ -1,5 +1,6 @@
 {{- $pdSize := .Values.pd.size | int }}
 {{- $tikvSize := .Values.tikv.size | int }}
+{{- $pumpSize := .Values.pump.size | int }}
 {{- $pdPort := .Values.pd.port | int }}
 {{- $pdPeerPort := add $pdPort 10000 }}
 {{- $tikvPort := .Values.tikv.port | int -}}
@@ -283,3 +284,65 @@ services:
     {{- end }}
     restart: on-failure
   {{- end -}}
+
+  {{- range until $pumpSize }}
+  pump{{ . }}:
+    environment:
+      GRPC_GO_LOG_VERBOSITY_LEVEL: 10
+    image: {{ $.Values.pump.image }}
+    ports:
+      - "{{ add 8250 . }}:{{ add 8250 .}}"
+    volumes:
+      - /tmp:/tmp
+      - ./data:/data
+    command:
+      - --addr=0.0.0.0:{{ add 8250 . }}
+      - --advertise-addr=pump{{ . }}:{{ add 8250 . }}
+      - --pd-urls={{- range until $pdSize }}
+        {{- if . }},{{- end }}http://pd{{ . }}:2379
+      {{- end }}
+      - --gc=1
+      - --log-file=/tmp/pump{{ . }}.log
+      - --L=debug
+      - --data-dir=/data/data.pump{{ . }}
+      - --node-id=1.1.1.1:{{ add 8250 . }}
+      {{- if $.Values.prometheus }}
+      - --metrics-addr=pushgateway:{{ $.Values.pushgateway.port }}
+      {{- end }}
+    depends_on:
+      {{- range until $pdSize }}
+      - "pd{{.}}"
+      {{- end }}
+  {{- end }}
+
+  {{- if $.Values.pump }}
+  drainer0:
+    image: {{ $.Values.drainer.image }}
+    ports:
+      - "8249:8249"
+    volumes:
+      - /tmp:/tmp
+      - ./data:/data
+      - ./config/drainer.toml:/drainer.toml:ro
+    entrypoint:
+      - /drainer
+    command:
+      - --addr=drainer0:8249
+      - --pd-urls={{- range until $pdSize }}
+        {{- if . }},{{- end }}http://pd{{ . }}:2379
+      {{- end }}
+      - --log-file=/tmp/drainer.log
+      - --L=debug
+      - --data-dir=/data/data.drainer
+      {{- if $.Values.prometheus }}
+      - --metrics-addr=pushgateway:{{ $.Values.pushgateway.port }}
+      {{- end }}
+      - --config=/drainer.toml
+    depends_on:
+      {{- range until $pdSize }}
+      - "pd{{.}}"
+      {{- end }}
+      {{- range until $tikvSize }}
+      - "tikv{{.}}"
+      {{- end }}
+  {{- end }}

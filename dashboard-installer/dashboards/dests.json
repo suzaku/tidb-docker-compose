@@ -6,7 +6,8 @@
             "overview": "TiDB-Cluster-Overview",
             "pd": "TiDB-Cluster-PD",
             "tidb": "TiDB-Cluster-TiDB",
-            "tikv": "TiDB-Cluster-TiKV"
+            "tikv": "TiDB-Cluster-TiKV",
+            "binlog": "TiDB-Cluster-Binlog"
         }
     }
 ]

@@ -1,0 +1,68 @@
+# drainer Configuration.
+
+# drainer 提供服务的地址(默认 "127.0.0.1:8249")
+#addr = "192.168.224.184:8249"
+#slave-pd-urls = "http://192.168.224.184:2479"
+# 向 pd 查询在线 pump 的时间间隔 (默认 10，单位 秒)
+detect-interval = 3
+
+# drainer 数据存储位置路径 (默认 "data.drainer")
+#data-dir = "data.drainer"
+
+# pd 集群节点的地址 (默认 "http://127.0.0.1:2379")
+#pd-urls = "http://192.168.224.184:2379"
+#kafka-addrs = "127.0.0.1:9092"
+#zookeeper-addrs = "127.0.0.1:2181/kafka/123"
+# syncer Configuration.
+
+[syncer]
+# db 过滤列表 (默认 "INFORMATION_SCHEMA,PERFORMANCE_SCHEMA,mysql,test"),   
+# 不支持对 ignore schemas 的 table 进行 rename DDL 操作
+ignore-schemas = "INFORMATION_SCHEMA,PERFORMANCE_SCHEMA,mysql,test,ignore_test,ignore_test2,tidb_loader"
+#ignore-schemas = "test" 
+
+# 输出到下游数据库一个事务的 sql 数量 (default 1)
+txn-batch = 100
+
+# 同步下游的并发数，该值设置越高同步的吞吐性能越好 (default 1)
+worker-count = 1
+
+disable-dispatch = true
+safe-mode = false
+#use-insert = true
+
+# drainer 下游服务类型 (默认为 mysql)
+# valid values are "mysql", "pb"
+db-type = "pb"
+#db-type = "mysql"
+#db-type = "kafka"
+
+##replicate-do-db priority over replicate-do-table if have same db name
+##and we support regex expression , start with '~' declare use regex expression.
+#
+#replicate-do-db = ["~^b.*","s1"]
+#[[replicate-do-table]]
+#db-name ="test"
+#tbl-name = "log"
+
+#[[replicate-do-table]]
+#db-name ="test"
+#tbl-name = "~^a.*"
+
+# the downstream mysql protocol database
+#[syncer.to]
+#host = "192.168.224.184"
+#host = "192.168.1.8"
+#host = "192.168.31.246"
+#user = "root"
+#password = "123456"
+#port = 3307
+
+# uncomment this if you want to use pb as db-type
+[syncer.to]
+dir = "/data/data.drainer"
+compression = "flate"
+
+#[syncer.to]
+#kafka-addrs = "192.168.31.246:9092"
+#kafka-version = "0.8.2.0"

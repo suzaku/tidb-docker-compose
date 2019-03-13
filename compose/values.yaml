@@ -89,3 +89,10 @@ dashboardInstaller:
   # and its dockerfile name
   # buildPath: ./dashboard-installer
   # dockerfile: Dockerfile
+
+pump:
+  size: 2
+  image: pingcap/binlog:latest
+
+drainer:
+  image: pingcap/binlog:latest

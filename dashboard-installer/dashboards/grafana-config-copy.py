@@ -22,11 +22,13 @@ except:
 # use a viewer key
 src = dict(
     dashboards={
-                "pd"  : 'pd.json',
-                "tidb": 'tidb.json',
-                "tikv": 'tikv.json',
-                "overview": 'overview.json'
-                })
+        "pd"  : 'pd.json',
+        "tidb": 'tidb.json',
+        "tikv": 'tikv.json',
+        "overview": 'overview.json',
+        "binlog": 'binlog.json',
+    }
+)
 
 dests = [
 ]
@@ -92,11 +94,10 @@ if __name__ == '__main__':
     user = sys.argv[2]
     password = sys.argv[3]
     print(url)
-    for type_ in src['dashboards']:
-        print("[load] from <{}>:{}".format(
-          src['dashboards'][type_], type_))
+    for type_, fname in src['dashboards'].items():
+        print("[load] from <{}>:{}".format(fname, type_))
 
-        dashboard = json.load(open(src['dashboards'][type_]))
+        dashboard = json.load(open(fname))
 
         for dest in dests:
             dashboard = fill_dashboard_with_dest_config(dashboard, dest, type_)
